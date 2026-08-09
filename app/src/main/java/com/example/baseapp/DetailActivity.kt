@@ -83,4 +83,4 @@ class DetailActivity : AppCompatActivity() {
             }
         }
     }
-}\n
+}
