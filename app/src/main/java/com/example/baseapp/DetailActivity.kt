@@ -8,7 +8,10 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AppCompatActivity
 import androidx.lifecycle.lifecycleScope
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 import com.bumptech.glide.Glide
+import com.example.baseapp.adapter.EpisodeAdapter
 import com.example.baseapp.repository.AnimeRepository
 import kotlinx.coroutines.launch
 
@@ -17,6 +20,7 @@ class DetailActivity : AppCompatActivity() {
     private lateinit var imgDetailPoster: ImageView
     private lateinit var tvDetailTitle: TextView
     private lateinit var tvSynopsis: TextView
+    private lateinit var rvEpisodes: RecyclerView
     private lateinit var progressBarDetail: ProgressBar
     private val repository = AnimeRepository()
 
@@ -24,17 +28,18 @@ class DetailActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_detail)
         
-        // Memunculkan tombol Back di atas (Action Bar)
         supportActionBar?.setDisplayHomeAsUpEnabled(true)
         supportActionBar?.title = "Detail Anime"
 
         imgDetailPoster = findViewById(R.id.imgDetailPoster)
         tvDetailTitle = findViewById(R.id.tvDetailTitle)
         tvSynopsis = findViewById(R.id.tvSynopsis)
+        rvEpisodes = findViewById(R.id.rvEpisodes)
         progressBarDetail = findViewById(R.id.progressBarDetail)
+        
+        rvEpisodes.layoutManager = LinearLayoutManager(this)
 
         val slug = intent.getStringExtra("slug") ?: ""
-
         if (slug.isNotEmpty()) {
             fetchDetail(slug)
         } else {
@@ -44,7 +49,7 @@ class DetailActivity : AppCompatActivity() {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        finish() // Kembali ke halaman sebelumnya saat tombol back ditekan
+        finish()
         return true
     }
 
@@ -69,10 +74,12 @@ class DetailActivity : AppCompatActivity() {
                     }
                     
                     if (image.isNotEmpty()) {
-                        Glide.with(this@DetailActivity)
-                            .load(image)
-                            .centerCrop()
-                            .into(imgDetailPoster)
+                        Glide.with(this@DetailActivity).load(image).centerCrop().into(imgDetailPoster)
+                    }
+                    
+                    val episodes = result?.getAsJsonArray("episodes")
+                    if (episodes != null) {
+                        rvEpisodes.adapter = EpisodeAdapter(episodes)
                     }
                 } else {
                     Toast.makeText(this@DetailActivity, "Gagal memuat detail", Toast.LENGTH_SHORT).show()
