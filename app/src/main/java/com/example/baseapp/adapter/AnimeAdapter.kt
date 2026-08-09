@@ -42,4 +42,4 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
     }
 
     override fun getItemCount() = animeList.size
-}\n
+}

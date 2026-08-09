@@ -32,4 +32,4 @@ class AnimeViewModel : ViewModel() {
             }
         }
     }
-}\n
+}

@@ -16,4 +16,4 @@ data class AnimeResult(
 
 data class AnimeResponse(
     @SerializedName("result") val result: AnimeResult?
-)\n
+)
