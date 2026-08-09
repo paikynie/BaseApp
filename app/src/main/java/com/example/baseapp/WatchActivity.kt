@@ -73,12 +73,19 @@ class WatchActivity : AppCompatActivity() {
     }
 
     private fun setupNavigationButtons() {
-        btnPrev.isEnabled = currentIndex > 0
-        btnNext.isEnabled = currentIndex < slugList.size - 1
+        // Karena API me-return episode dari yang TERBARU ke TERLAMA (Descending)
+        // Index 0 = Episode Terbaru (misal Ep 6)
+        // Index 1 = Episode Lama (misal Ep 5)
+        
+        // PREV (Episode lebih lama) = index BERTAMBAH
+        btnPrev.isEnabled = currentIndex < slugList.size - 1
+        
+        // NEXT (Episode lebih baru) = index BERKURANG
+        btnNext.isEnabled = currentIndex > 0
 
         btnPrev.setOnClickListener {
-            if (currentIndex > 0) {
-                currentIndex--
+            if (currentIndex < slugList.size - 1) {
+                currentIndex++
                 exoPlayer?.stop()
                 exoPlayer?.clearMediaItems()
                 loadCurrentEpisode()
@@ -86,8 +93,8 @@ class WatchActivity : AppCompatActivity() {
         }
 
         btnNext.setOnClickListener {
-            if (currentIndex < slugList.size - 1) {
-                currentIndex++
+            if (currentIndex > 0) {
+                currentIndex--
                 exoPlayer?.stop()
                 exoPlayer?.clearMediaItems()
                 loadCurrentEpisode()
