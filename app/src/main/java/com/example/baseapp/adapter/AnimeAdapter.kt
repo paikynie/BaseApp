@@ -41,13 +41,11 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
                 .into(holder.imgPoster)
         }
 
-        // Membuat Card bisa dipencet (sementara memunculkan Toast)
+        // Navigasi ke DetailActivity
         holder.itemView.setOnClickListener {
-            android.widget.Toast.makeText(
-                holder.itemView.context, 
-                "Membuka: ${anime.title}", 
-                android.widget.Toast.LENGTH_SHORT
-            ).show()
+            val intent = android.content.Intent(holder.itemView.context, com.example.baseapp.DetailActivity::class.java)
+            intent.putExtra("slug", anime.slug)
+            holder.itemView.context.startActivity(intent)
         }
     }
 

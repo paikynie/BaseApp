@@ -49,8 +49,11 @@ class MainActivity : AppCompatActivity() {
             tvError.text = errorMsg
         }
 
+        val tvHeader = findViewById<TextView>(R.id.tvHeader)
+        tvHeader.text = "Anime Sedang Tayang"
+
         // Fetch data
         progressBar.visibility = View.VISIBLE
-        viewModel.fetchLatestAnime()
+        viewModel.fetchOngoingAnime()
     }
 }

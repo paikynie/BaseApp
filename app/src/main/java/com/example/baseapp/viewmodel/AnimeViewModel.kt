@@ -17,10 +17,10 @@ class AnimeViewModel : ViewModel() {
     private val _error = MutableLiveData<String>()
     val error: LiveData<String> get() = _error
 
-    fun fetchLatestAnime() {
+    fun fetchOngoingAnime() {
         viewModelScope.launch {
             try {
-                val response = repository.getLatestAnime()
+                val response = repository.getOngoingAnime()
                 if (response.isSuccessful) {
                     val list = response.body()?.result?.episodes ?: emptyList()
                     _animeList.postValue(list)
