@@ -8,6 +8,7 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.baseapp.R
 import com.example.baseapp.WatchActivity
+import java.util.ArrayList
 
 class EpisodeAdapter(private val episodes: com.google.gson.JsonArray) : RecyclerView.Adapter<EpisodeAdapter.ViewHolder>() {
 
@@ -32,7 +33,12 @@ class EpisodeAdapter(private val episodes: com.google.gson.JsonArray) : Recycler
         
         holder.itemView.setOnClickListener {
             val intent = Intent(holder.itemView.context, WatchActivity::class.java)
-            intent.putExtra("slug", slug)
+            val slugList = ArrayList<String>()
+            for (i in 0 until episodes.size()) {
+                slugList.add(episodes.get(i).asJsonObject.get("slug").asString)
+            }
+            intent.putStringArrayListExtra("slugList", slugList)
+            intent.putExtra("currentIndex", position)
             holder.itemView.context.startActivity(intent)
         }
     }
