@@ -11,7 +11,8 @@ data class Anime(
 
 data class AnimeResult(
     @SerializedName("page") val page: Int?,
-    @SerializedName("episodes") val episodes: List<Anime>?
+    @SerializedName("episodes") val episodes: List<Anime>?,
+    @SerializedName("anime") val animeList: List<Anime>?
 )
 
 data class AnimeResponse(

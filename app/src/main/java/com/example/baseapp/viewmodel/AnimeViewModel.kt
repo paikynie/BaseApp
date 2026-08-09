@@ -22,7 +22,8 @@ class AnimeViewModel : ViewModel() {
             try {
                 val response = repository.getOngoingAnime()
                 if (response.isSuccessful) {
-                    val list = response.body()?.result?.episodes ?: emptyList()
+                    val result = response.body()?.result
+                    val list = result?.animeList ?: result?.episodes ?: emptyList()
                     _animeList.postValue(list)
                 } else {
                     _error.postValue("Error: ${response.code()}")
