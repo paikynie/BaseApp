@@ -55,7 +55,7 @@ class DetailActivity : AppCompatActivity() {
                 progressBarDetail.visibility = View.GONE
                 
                 if (response.isSuccessful) {
-                    val result = response.body()?.getAsJsonObject("result")
+                    val result = response.body()?.asJsonObject?.getAsJsonObject("result")
                     
                     val title = result?.get("title")?.asString ?: "No Title"
                     val synopsis = result?.get("synopsis")?.asString ?: "Tidak ada sinopsis."
