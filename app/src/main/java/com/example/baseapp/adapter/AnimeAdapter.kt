@@ -30,7 +30,8 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
         
         var url = anime.imageUrl ?: ""
         if (url.startsWith("/")) {
-            url = "https://api.pailynie.eu.cc$url"
+            // Gambar ternyata disimpan di server sokuja, bukan di api.pailynie.eu.cc
+            url = "https://x6.sokuja.uk$url"
         }
         
         if (url.isNotEmpty()) {
@@ -38,6 +39,15 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
                 .load(url)
                 .centerCrop()
                 .into(holder.imgPoster)
+        }
+
+        // Membuat Card bisa dipencet (sementara memunculkan Toast)
+        holder.itemView.setOnClickListener {
+            android.widget.Toast.makeText(
+                holder.itemView.context, 
+                "Membuka: ${anime.title}", 
+                android.widget.Toast.LENGTH_SHORT
+            ).show()
         }
     }
 
