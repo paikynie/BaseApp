@@ -4,8 +4,8 @@ import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 
 object ApiClient {
-    // TODO: Ganti URL ini dengan URL Web API Anda nanti (harus diakhiri dengan '/')
-    private const val BASE_URL = "https://api.example.com/v1/"
+    // Menggunakan HTTPS (atau HTTP jika diatur di manifest usesCleartextTraffic)
+    private const val BASE_URL = "https://api.pailynie.eu.cc/"
 
     val instance: ApiService by lazy {
         val retrofit = Retrofit.Builder()
