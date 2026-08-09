@@ -26,9 +26,13 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
     override fun onBindViewHolder(holder: AnimeViewHolder, position: Int) {
         val anime = animeList[position]
         holder.tvTitle.text = anime.title ?: "No Title"
-        holder.tvEpisode.text = anime.currentEpisode ?: "Episode N/A"
+        holder.tvEpisode.text = "Episode " + (anime.currentEpisode ?: "N/A")
         
-        val url = anime.imageUrl ?: ""
+        var url = anime.imageUrl ?: ""
+        if (url.startsWith("/")) {
+            url = "https://api.pailynie.eu.cc$url"
+        }
+        
         if (url.isNotEmpty()) {
             Glide.with(holder.itemView.context)
                 .load(url)
@@ -38,4 +42,4 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
     }
 
     override fun getItemCount() = animeList.size
-}
+}\n

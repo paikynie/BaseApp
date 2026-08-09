@@ -22,7 +22,8 @@ class AnimeViewModel : ViewModel() {
             try {
                 val response = repository.getLatestAnime()
                 if (response.isSuccessful) {
-                    _animeList.postValue(response.body()?.data ?: emptyList())
+                    val list = response.body()?.result?.episodes ?: emptyList()
+                    _animeList.postValue(list)
                 } else {
                     _error.postValue("Error: ${response.code()}")
                 }
@@ -31,4 +32,4 @@ class AnimeViewModel : ViewModel() {
             }
         }
     }
-}
+}\n

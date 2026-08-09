@@ -3,13 +3,17 @@ package com.example.baseapp.model
 import com.google.gson.annotations.SerializedName
 
 data class Anime(
-    @SerializedName("id") val id: String,
-    @SerializedName("title") val title: String,
-    @SerializedName("image_url") val imageUrl: String,
-    @SerializedName("episode") val currentEpisode: String
+    @SerializedName("title") val title: String?,
+    @SerializedName("slug") val slug: String?,
+    @SerializedName("image") val imageUrl: String?,
+    @SerializedName("episode") val currentEpisode: String?
+)
+
+data class AnimeResult(
+    @SerializedName("page") val page: Int?,
+    @SerializedName("episodes") val episodes: List<Anime>?
 )
 
 data class AnimeResponse(
-    @SerializedName("status") val status: String,
-    @SerializedName("data") val data: List<Anime>
-)
+    @SerializedName("result") val result: AnimeResult?
+)\n
