@@ -6,7 +6,9 @@ data class Anime(
     @SerializedName("title") val title: String?,
     @SerializedName("slug") val slug: String?,
     @SerializedName("image") val imageUrl: String?,
-    @SerializedName("episode") val currentEpisode: String?
+    @SerializedName("episode") val currentEpisode: String?,
+    @SerializedName("type") val type: String?,
+    @SerializedName("status") val status: String?
 )
 
 data class AnimeResult(

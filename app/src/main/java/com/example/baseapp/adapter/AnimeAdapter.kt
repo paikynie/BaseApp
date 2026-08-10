@@ -26,7 +26,17 @@ class AnimeAdapter(private val animeList: List<Anime>) : RecyclerView.Adapter<An
     override fun onBindViewHolder(holder: AnimeViewHolder, position: Int) {
         val anime = animeList[position]
         holder.tvTitle.text = anime.title ?: "No Title"
-        holder.tvEpisode.text = "Episode " + (anime.currentEpisode ?: "N/A")
+        
+        val eps = anime.currentEpisode
+        if (!eps.isNullOrEmpty()) {
+            holder.tvEpisode.text = "Episode $eps"
+            holder.tvEpisode.visibility = View.VISIBLE
+        } else if (!anime.type.isNullOrEmpty()) {
+            holder.tvEpisode.text = anime.type
+            holder.tvEpisode.visibility = View.VISIBLE
+        } else {
+            holder.tvEpisode.visibility = View.GONE
+        }
         
         var url = anime.imageUrl ?: ""
         if (url.startsWith("/")) {
