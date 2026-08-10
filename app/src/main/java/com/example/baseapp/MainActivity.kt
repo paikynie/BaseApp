@@ -35,6 +35,8 @@ import java.net.URL
 import kotlin.concurrent.thread
 import com.example.baseapp.adapter.AnimeAdapter
 import com.example.baseapp.viewmodel.AnimeViewModel
+import android.widget.Button
+import androidx.cardview.widget.CardView
 
 class MainActivity : AppCompatActivity() {
 
@@ -45,6 +47,11 @@ class MainActivity : AppCompatActivity() {
     private lateinit var tvError: TextView
     private lateinit var etSearch: EditText
     private lateinit var btnClearSearch: ImageButton
+    private lateinit var tvVersion: TextView
+    private lateinit var cardResume: CardView
+    private lateinit var tvResumeTitle: TextView
+    private lateinit var pbResumeProgress: ProgressBar
+    private lateinit var btnResume: Button
     private var searchJob: Job? = null
     
     private var downloadId: Long = -1L
@@ -91,6 +98,16 @@ class MainActivity : AppCompatActivity() {
         viewModel = ViewModelProvider(this)[AnimeViewModel::class.java]
         etSearch = findViewById(R.id.etSearch)
         btnClearSearch = findViewById(R.id.btnClearSearch)
+        tvVersion = findViewById(R.id.tvVersion)
+        cardResume = findViewById(R.id.cardResume)
+        tvResumeTitle = findViewById(R.id.tvResumeTitle)
+        pbResumeProgress = findViewById(R.id.pbResumeProgress)
+        btnResume = findViewById(R.id.btnResume)
+        
+        try {
+            val pInfo = packageManager.getPackageInfo(packageName, 0)
+            tvVersion.text = "v" + pInfo.versionName
+        } catch(e: Exception) {}
 
         etSearch.addTextChangedListener(object : TextWatcher {
             override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
@@ -145,6 +162,47 @@ class MainActivity : AppCompatActivity() {
         viewModel.fetchOngoingAnime()
         
         checkForUpdates()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        updateHeroCard()
+    }
+    
+    private fun updateHeroCard() {
+        val prefs = getSharedPreferences("VideoProgress", Context.MODE_PRIVATE)
+        var latestSlug: String? = null
+        var maxTimestamp = 0L
+
+        for (key in prefs.all.keys) {
+            if (key.endsWith("_timestamp")) {
+                val timestamp = prefs.getLong(key, 0L)
+                if (timestamp > maxTimestamp) {
+                    maxTimestamp = timestamp
+                    latestSlug = key.removeSuffix("_timestamp")
+                }
+            }
+        }
+
+        if (latestSlug != null) {
+            val title = prefs.getString(latestSlug + "_title", "Episode") ?: "Episode"
+            val pos = prefs.getLong(latestSlug, 0L)
+            val duration = prefs.getLong(latestSlug + "_duration", 1L)
+            val percentage = if (duration > 0) ((pos.toFloat() / duration.toFloat()) * 100).toInt() else 0
+            
+            cardResume.visibility = View.VISIBLE
+            tvResumeTitle.text = title
+            pbResumeProgress.progress = percentage
+            
+            btnResume.setOnClickListener {
+                val intent = Intent(this, WatchActivity::class.java)
+                intent.putStringArrayListExtra("slugList", arrayListOf(latestSlug))
+                intent.putExtra("currentIndex", 0)
+                startActivity(intent)
+            }
+        } else {
+            cardResume.visibility = View.GONE
+        }
     }
 
     private fun checkForUpdates() {

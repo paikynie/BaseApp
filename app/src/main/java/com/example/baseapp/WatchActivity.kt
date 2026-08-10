@@ -261,11 +261,18 @@ class WatchActivity : AppCompatActivity() {
         if (duration > 0) {
             val percentage = currentPosition.toFloat() / duration.toFloat()
             if (percentage >= 0.95f) {
-                prefs.edit().remove(currentSlug).remove(currentSlug + "_duration").apply()
+                prefs.edit()
+                    .remove(currentSlug)
+                    .remove(currentSlug + "_duration")
+                    .remove(currentSlug + "_timestamp")
+                    .remove(currentSlug + "_title")
+                    .apply()
             } else {
                 prefs.edit()
                     .putLong(currentSlug, currentPosition)
                     .putLong(currentSlug + "_duration", duration)
+                    .putLong(currentSlug + "_timestamp", System.currentTimeMillis())
+                    .putString(currentSlug + "_title", tvEpsTitleWatch.text.toString())
                     .apply()
             }
         }
