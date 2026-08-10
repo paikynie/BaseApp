@@ -16,6 +16,21 @@ import androidx.recyclerview.widget.RecyclerView
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
+import android.app.DownloadManager
+import android.content.BroadcastReceiver
+import android.content.Context
+import android.content.Intent
+import android.content.IntentFilter
+import android.net.Uri
+import android.os.Build
+import android.os.Environment
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.core.content.FileProvider
+import org.json.JSONObject
+import java.io.File
+import java.net.URL
+import kotlin.concurrent.thread
 import com.example.baseapp.adapter.AnimeAdapter
 import com.example.baseapp.viewmodel.AnimeViewModel
 
@@ -29,6 +44,19 @@ class MainActivity : AppCompatActivity() {
     private lateinit var etSearch: EditText
     private lateinit var btnClearSearch: ImageButton
     private var searchJob: Job? = null
+    
+    private var downloadId: Long = -1L
+    private val downloadReceiver = object : BroadcastReceiver() {
+        override fun onReceive(context: Context, intent: Intent) {
+            val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
+            if (id == downloadId) {
+                installApk()
+                try {
+                    unregisterReceiver(this)
+                } catch(e: Exception){}
+            }
+        }
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -92,11 +120,88 @@ class MainActivity : AppCompatActivity() {
             tvError.text = errorMsg
         }
 
-        val tvHeader = findViewById<TextView>(R.id.tvHeader)
-        tvHeader.text = "BaseApp"
-
         // Fetch data
         progressBar.visibility = View.VISIBLE
         viewModel.fetchOngoingAnime()
+        
+        checkForUpdates()
+    }
+
+    private fun checkForUpdates() {
+        thread {
+            try {
+                val url = URL("https://api.github.com/repos/paikynie/BaseApp/releases/latest")
+                val connection = url.openConnection()
+                connection.setRequestProperty("Accept", "application/vnd.github.v3+json")
+                val response = connection.getInputStream().bufferedReader().readText()
+                val jsonObject = JSONObject(response)
+                
+                val latestVersionTag = jsonObject.getString("tag_name")
+                val pInfo = packageManager.getPackageInfo(packageName, 0)
+                val currentVersion = "v" + pInfo.versionName
+                
+                if (latestVersionTag != currentVersion) {
+                    val assets = jsonObject.getJSONArray("assets")
+                    var downloadUrl = ""
+                    for (i in 0 until assets.length()) {
+                        val asset = assets.getJSONObject(i)
+                        if (asset.getString("name").endsWith(".apk")) {
+                            downloadUrl = asset.getString("browser_download_url")
+                            break
+                        }
+                    }
+                    
+                    if (downloadUrl.isNotEmpty()) {
+                        runOnUiThread {
+                            showUpdateDialog(latestVersionTag, downloadUrl)
+                        }
+                    }
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+            }
+        }
+    }
+
+    private fun showUpdateDialog(latestVersion: String, downloadUrl: String) {
+        if (isFinishing || isDestroyed) return
+        AlertDialog.Builder(this)
+            .setTitle("Update Tersedia")
+            .setMessage("Update tersedia ($latestVersion). Update sekarang?")
+            .setPositiveButton("Update") { _, _ ->
+                startDownload(downloadUrl)
+            }
+            .setNegativeButton("Nanti", null)
+            .show()
+    }
+
+    private fun startDownload(url: String) {
+        val request = DownloadManager.Request(Uri.parse(url))
+        request.setTitle("Painime Update")
+        request.setDescription("Downloading latest version...")
+        request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "painime_update.apk")
+        
+        val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+        downloadId = manager.enqueue(request)
+        
+        Toast.makeText(this, "Mendownload update...", Toast.LENGTH_SHORT).show()
+        
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            registerReceiver(downloadReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE), Context.RECEIVER_EXPORTED)
+        } else {
+            registerReceiver(downloadReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
+        }
+    }
+
+    private fun installApk() {
+        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "painime_update.apk")
+        if (file.exists()) {
+            val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
+            val installIntent = Intent(Intent.ACTION_VIEW)
+            installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
+            installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
+            startActivity(installIntent)
+        }
     }
 }
