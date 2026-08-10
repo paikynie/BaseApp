@@ -15,7 +15,10 @@ import androidx.lifecycle.lifecycleScope
 import androidx.media3.common.MediaItem
 import androidx.media3.exoplayer.ExoPlayer
 import androidx.media3.ui.PlayerView
+import androidx.media3.common.Player
 import com.example.baseapp.repository.AnimeRepository
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
 class WatchActivity : AppCompatActivity() {
@@ -27,6 +30,10 @@ class WatchActivity : AppCompatActivity() {
     private lateinit var btnPrev: Button
     private lateinit var btnNext: Button
     private lateinit var btnFullscreen: Button
+    private lateinit var autoNextOverlay: LinearLayout
+    private lateinit var tvAutoNextCountdown: TextView
+    private lateinit var btnCancelAutoNext: Button
+    private var autoNextJob: Job? = null
     private var exoPlayer: ExoPlayer? = null
     private val repository = AnimeRepository()
     
@@ -47,6 +54,13 @@ class WatchActivity : AppCompatActivity() {
         btnPrev = findViewById(R.id.btnPrev)
         btnNext = findViewById(R.id.btnNext)
         btnFullscreen = findViewById(R.id.btnFullscreen)
+        autoNextOverlay = findViewById(R.id.autoNextOverlay)
+        tvAutoNextCountdown = findViewById(R.id.tvAutoNextCountdown)
+        btnCancelAutoNext = findViewById(R.id.btnCancelAutoNext)
+
+        btnCancelAutoNext.setOnClickListener {
+            cancelAutoNext()
+        }
 
         slugList = intent.getStringArrayListExtra("slugList") ?: arrayListOf()
         currentIndex = intent.getIntExtra("currentIndex", 0)
@@ -105,6 +119,7 @@ class WatchActivity : AppCompatActivity() {
     private fun loadCurrentEpisode() {
         if (slugList.isEmpty()) return
         
+        cancelAutoNext()
         setupNavigationButtons()
         val slug = slugList[currentIndex]
         
@@ -172,6 +187,14 @@ class WatchActivity : AppCompatActivity() {
         if (exoPlayer == null) {
             exoPlayer = ExoPlayer.Builder(this).build()
             playerView.player = exoPlayer
+            
+            exoPlayer?.addListener(object : Player.Listener {
+                override fun onPlaybackStateChanged(playbackState: Int) {
+                    if (playbackState == Player.STATE_ENDED) {
+                        handleVideoEnd()
+                    }
+                }
+            })
         }
         
         val mediaItem = MediaItem.fromUri(url)
@@ -184,8 +207,32 @@ class WatchActivity : AppCompatActivity() {
         
         exoPlayer?.playWhenReady = playWhenReady
     }
+    
+    private fun handleVideoEnd() {
+        if (currentIndex <= 0) return
+        
+        autoNextOverlay.visibility = View.VISIBLE
+        
+        autoNextJob = lifecycleScope.launch {
+            for (i in 5 downTo 1) {
+                tvAutoNextCountdown.text = "Episode selanjutnya dalam $i detik..."
+                delay(1000)
+            }
+            autoNextOverlay.visibility = View.GONE
+            currentIndex--
+            exoPlayer?.stop()
+            exoPlayer?.clearMediaItems()
+            loadCurrentEpisode()
+        }
+    }
+
+    private fun cancelAutoNext() {
+        autoNextJob?.cancel()
+        autoNextOverlay.visibility = View.GONE
+    }
 
     override fun onDestroy() {
+        cancelAutoNext()
         super.onDestroy()
         exoPlayer?.release()
         exoPlayer = null
