@@ -24,6 +24,8 @@ import android.content.IntentFilter
 import android.net.Uri
 import android.os.Build
 import android.os.Environment
+import android.provider.Settings
+import android.util.Log
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.core.content.FileProvider
@@ -50,7 +52,25 @@ class MainActivity : AppCompatActivity() {
         override fun onReceive(context: Context, intent: Intent) {
             val id = intent.getLongExtra(DownloadManager.EXTRA_DOWNLOAD_ID, -1)
             if (id == downloadId) {
-                installApk()
+                Log.d("AutoUpdate", "Download receiver triggered")
+                val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
+                val query = DownloadManager.Query().setFilterById(downloadId)
+                val cursor = manager.query(query)
+                if (cursor.moveToFirst()) {
+                    val statusIndex = cursor.getColumnIndex(DownloadManager.COLUMN_STATUS)
+                    if (statusIndex != -1) {
+                        val status = cursor.getInt(statusIndex)
+                        if (status == DownloadManager.STATUS_SUCCESSFUL) {
+                            Log.d("AutoUpdate", "Download successful, checking permissions...")
+                            Toast.makeText(this@MainActivity, "Download selesai, memulai instalasi...", Toast.LENGTH_SHORT).show()
+                            checkInstallPermissionAndInstall()
+                        } else {
+                            Log.e("AutoUpdate", "Download failed with status: $status")
+                            Toast.makeText(this@MainActivity, "Download gagal", Toast.LENGTH_SHORT).show()
+                        }
+                    }
+                }
+                cursor.close()
                 try {
                     unregisterReceiver(this)
                 } catch(e: Exception){}
@@ -180,10 +200,18 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun startDownload(url: String) {
+        Log.d("AutoUpdate", "Memulai download dari: $url")
         val request = DownloadManager.Request(Uri.parse(url))
         request.setTitle("Painime Update")
         request.setDescription("Downloading latest version...")
         request.setNotificationVisibility(DownloadManager.Request.VISIBILITY_VISIBLE_NOTIFY_COMPLETED)
+        
+        // Hapus file lama jika ada agar tidak bentrok
+        val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "painime_update.apk")
+        if (file.exists()) {
+            file.delete()
+        }
+        
         request.setDestinationInExternalFilesDir(this, Environment.DIRECTORY_DOWNLOADS, "painime_update.apk")
         
         val manager = getSystemService(Context.DOWNLOAD_SERVICE) as DownloadManager
@@ -197,15 +225,34 @@ class MainActivity : AppCompatActivity() {
             registerReceiver(downloadReceiver, IntentFilter(DownloadManager.ACTION_DOWNLOAD_COMPLETE))
         }
     }
+    
+    private fun checkInstallPermissionAndInstall() {
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+            if (!packageManager.canRequestPackageInstalls()) {
+                Log.d("AutoUpdate", "Izin install belum diberikan, meminta izin...")
+                Toast.makeText(this, "Mohon izinkan instalasi aplikasi lalu tekan kembali", Toast.LENGTH_LONG).show()
+                val intent = Intent(Settings.ACTION_MANAGE_UNKNOWN_APP_SOURCES)
+                intent.data = Uri.parse("package:$packageName")
+                startActivity(intent)
+                // Setelah user memberikan izin dan kembali, user harus menekan tombol update lagi
+                return
+            }
+        }
+        Log.d("AutoUpdate", "Izin install sudah ada, memicu installer...")
+        installApk()
+    }
 
     private fun installApk() {
         val file = File(getExternalFilesDir(Environment.DIRECTORY_DOWNLOADS), "painime_update.apk")
         if (file.exists()) {
+            Log.d("AutoUpdate", "File APK ditemukan, memulai intent instalasi...")
             val uri = FileProvider.getUriForFile(this, "$packageName.fileprovider", file)
             val installIntent = Intent(Intent.ACTION_VIEW)
             installIntent.setDataAndType(uri, "application/vnd.android.package-archive")
             installIntent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_GRANT_READ_URI_PERMISSION
             startActivity(installIntent)
+        } else {
+            Log.e("AutoUpdate", "File APK tidak ditemukan saat akan diinstall!")
         }
     }
 }
