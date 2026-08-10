@@ -33,4 +33,21 @@ class AnimeViewModel : ViewModel() {
             }
         }
     }
+
+    fun searchAnime(query: String) {
+        viewModelScope.launch {
+            try {
+                val response = repository.searchAnime(query)
+                if (response.isSuccessful) {
+                    val result = response.body()?.result
+                    val list = result?.animeList ?: result?.episodes ?: emptyList()
+                    _animeList.postValue(list)
+                } else {
+                    _error.postValue("Error: ${response.code()}")
+                }
+            } catch (e: Exception) {
+                _error.postValue(e.message ?: "Unknown error")
+            }
+        }
+    }
 }
