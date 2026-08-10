@@ -137,10 +137,14 @@ class MainActivity : AppCompatActivity() {
                 val jsonObject = JSONObject(response)
                 
                 val latestVersionTag = jsonObject.getString("tag_name")
-                val pInfo = packageManager.getPackageInfo(packageName, 0)
-                val currentVersion = "v" + pInfo.versionName
+                val cleanLatestVersion = latestVersionTag.removePrefix("v")
                 
-                if (latestVersionTag != currentVersion) {
+                val pInfo = packageManager.getPackageInfo(packageName, 0)
+                val currentVersion = pInfo.versionName
+                
+                android.util.Log.d("AutoUpdate", "Server version: $cleanLatestVersion, Installed version: $currentVersion")
+                
+                if (cleanLatestVersion != currentVersion) {
                     val assets = jsonObject.getJSONArray("assets")
                     var downloadUrl = ""
                     for (i in 0 until assets.length()) {
