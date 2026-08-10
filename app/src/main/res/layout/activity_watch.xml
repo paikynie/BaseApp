@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#000000"
+    android:background="@color/bg_main"
     android:keepScreenOn="true">
 
     <androidx.media3.ui.PlayerView
@@ -70,6 +70,9 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Prev Eps"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/accent_teal"
+            app:cornerRadius="50dp"
             android:layout_marginEnd="8dp" />
             
         <Button
@@ -77,13 +80,19 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Fullscreen"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/accent_teal"
+            app:cornerRadius="50dp"
             android:layout_marginEnd="8dp" />
             
         <Button
             android:id="@+id/btnNext"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Next Eps" />
+            android:text="Next Eps"
+            android:textColor="@color/white"
+            app:backgroundTint="@color/accent_teal"
+            app:cornerRadius="50dp" />
     </LinearLayout>
 
     <TextView

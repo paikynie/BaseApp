@@ -2,7 +2,7 @@
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA">
+    android:background="@color/bg_main">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -23,7 +23,7 @@
             android:layout_margin="16dp"
             android:textSize="22sp"
             android:textStyle="bold"
-            android:textColor="#212121" />
+            android:textColor="@color/text_primary" />
 
         <TextView
             android:layout_width="match_parent"
@@ -33,7 +33,7 @@
             android:text="Sinopsis"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#212121" />
+            android:textColor="@color/text_primary" />
 
         <TextView
             android:id="@+id/tvSynopsis"
@@ -41,7 +41,7 @@
             android:layout_height="wrap_content"
             android:layout_margin="16dp"
             android:textSize="14sp"
-            android:textColor="#757575" />
+            android:textColor="@color/text_secondary" />
             
         <TextView
             android:layout_width="match_parent"
@@ -52,7 +52,7 @@
             android:text="Daftar Episode"
             android:textSize="18sp"
             android:textStyle="bold"
-            android:textColor="#212121" />
+            android:textColor="@color/text_primary" />
             
         <androidx.recyclerview.widget.RecyclerView
             android:id="@+id/rvEpisodes"

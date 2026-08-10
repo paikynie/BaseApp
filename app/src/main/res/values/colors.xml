@@ -1,7 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="purple_500">#FF6200EE</color>
-    <color name="purple_700">#FF3700B3</color>
-    <color name="white">#FFFFFFFF</color>
+    <color name="bg_main">#0D1117</color>
+    <color name="bg_surface">#161B22</color>
+    <color name="accent_teal">#2BA9B4</color>
+    <color name="accent_teal_transparent">#332BA9B4</color>
+    <color name="text_primary">#F2F5F7</color>
+    <color name="text_secondary">#8B98A5</color>
+    <color name="white">#FFFFFF</color>
     <color name="ic_launcher_background">#FFFFFF</color>
 </resources>

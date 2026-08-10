@@ -5,7 +5,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="#F5F7FA"
+    android:background="@color/bg_main"
     tools:context=".MainActivity">
 
     <TextView
@@ -16,6 +16,7 @@
         android:text="Painime"
         android:textSize="24sp"
         android:textStyle="bold"
+        android:textColor="@color/white"
         app:layout_constraintTop_toTopOf="parent"
         app:layout_constraintStart_toStartOf="parent"/>
 
@@ -27,7 +28,7 @@
         android:layout_marginStart="16dp"
         android:layout_marginEnd="16dp"
         android:layout_marginTop="8dp"
-        android:background="@android:drawable/editbox_background"
+        android:background="@drawable/bg_search_bar"
         android:gravity="center_vertical"
         app:layout_constraintTop_toBottomOf="@id/tvHeader">
         
@@ -38,9 +39,14 @@
             android:layout_weight="1"
             android:background="@null"
             android:hint="Cari anime..."
+            android:textColorHint="@color/text_secondary"
+            android:textColor="@color/text_primary"
             android:inputType="text"
             android:maxLines="1"
             android:padding="8dp"
+            android:drawableStart="@android:drawable/ic_menu_search"
+            android:drawablePadding="8dp"
+            android:drawableTint="@color/accent_teal"
             android:textSize="16sp" />
             
         <ImageButton
@@ -49,6 +55,7 @@
             android:layout_height="wrap_content"
             android:background="?android:attr/selectableItemBackground"
             android:src="@android:drawable/ic_menu_close_clear_cancel"
+            app:tint="@color/accent_teal"
             android:padding="8dp"
             android:visibility="gone" />
     </LinearLayout>

@@ -159,17 +159,18 @@ class WatchActivity : AppCompatActivity() {
                             
                             // Highlight the first button initially
                             if (i == 0) {
-                                btn.setBackgroundColor(Color.parseColor("#4CAF50"))
+                                btn.setBackgroundColor(Color.parseColor("#2BA9B4"))
                             } else {
-                                btn.setBackgroundColor(Color.parseColor("#757575"))
+                                btn.setBackgroundColor(Color.parseColor("#161B22"))
                             }
+                            btn.setTextColor(Color.WHITE)
                             
                             btn.setOnClickListener {
                                 // Update button colors
                                 for (j in 0 until serverContainer.childCount) {
-                                    serverContainer.getChildAt(j).setBackgroundColor(Color.parseColor("#757575"))
+                                    serverContainer.getChildAt(j).setBackgroundColor(Color.parseColor("#161B22"))
                                 }
-                                btn.setBackgroundColor(Color.parseColor("#4CAF50"))
+                                btn.setBackgroundColor(Color.parseColor("#2BA9B4"))
                                 
                                 // Save current position and switch quality
                                 val currentPos = exoPlayer?.currentPosition ?: 0L
