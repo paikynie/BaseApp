@@ -36,6 +36,8 @@ class WatchActivity : AppCompatActivity() {
     private var autoNextJob: Job? = null
     private var exoPlayer: ExoPlayer? = null
     private val repository = AnimeRepository()
+    private lateinit var prefs: android.content.SharedPreferences
+    private var progressJob: Job? = null
     
     private var slugList: ArrayList<String> = arrayListOf()
     private var currentIndex: Int = 0
@@ -44,6 +46,8 @@ class WatchActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_watch)
+        
+        prefs = getSharedPreferences("VideoProgress", android.content.Context.MODE_PRIVATE)
         
         supportActionBar?.hide()
 
@@ -99,6 +103,7 @@ class WatchActivity : AppCompatActivity() {
 
         btnPrev.setOnClickListener {
             if (currentIndex < slugList.size - 1) {
+                saveProgress()
                 currentIndex++
                 exoPlayer?.stop()
                 exoPlayer?.clearMediaItems()
@@ -108,6 +113,7 @@ class WatchActivity : AppCompatActivity() {
 
         btnNext.setOnClickListener {
             if (currentIndex > 0) {
+                saveProgress()
                 currentIndex--
                 exoPlayer?.stop()
                 exoPlayer?.clearMediaItems()
@@ -122,6 +128,7 @@ class WatchActivity : AppCompatActivity() {
         cancelAutoNext()
         setupNavigationButtons()
         val slug = slugList[currentIndex]
+        val savedPos = prefs.getLong(slug, 0L)
         
         progressBarWatch.visibility = View.VISIBLE
         tvEpsTitleWatch.text = "Loading..."
@@ -139,8 +146,8 @@ class WatchActivity : AppCompatActivity() {
                     val streams = result?.getAsJsonArray("streams")
                     if (streams != null && streams.size() > 0) {
                         val firstStream = streams.get(0).asJsonObject
-                        // Load without seeking (start from 0)
-                        playVideo(firstStream.get("url").asString, 0L)
+                        // Load with saved position
+                        playVideo(firstStream.get("url").asString, savedPos)
                         
                         for (i in 0 until streams.size()) {
                             val streamObj = streams.get(i).asJsonObject
@@ -206,6 +213,7 @@ class WatchActivity : AppCompatActivity() {
         }
         
         exoPlayer?.playWhenReady = playWhenReady
+        startProgressSaver()
     }
     
     private fun handleVideoEnd() {
@@ -230,9 +238,47 @@ class WatchActivity : AppCompatActivity() {
         autoNextJob?.cancel()
         autoNextOverlay.visibility = View.GONE
     }
+    
+    private fun startProgressSaver() {
+        progressJob?.cancel()
+        progressJob = lifecycleScope.launch {
+            while (true) {
+                delay(5000)
+                saveProgress()
+            }
+        }
+    }
+
+    private fun saveProgress() {
+        val player = exoPlayer ?: return
+        if (slugList.isEmpty()) return
+        val currentSlug = slugList[currentIndex]
+        
+        val currentPosition = player.currentPosition
+        val duration = player.duration
+        
+        if (duration > 0) {
+            val percentage = currentPosition.toFloat() / duration.toFloat()
+            if (percentage >= 0.95f) {
+                prefs.edit().remove(currentSlug).remove(currentSlug + "_duration").apply()
+            } else {
+                prefs.edit()
+                    .putLong(currentSlug, currentPosition)
+                    .putLong(currentSlug + "_duration", duration)
+                    .apply()
+            }
+        }
+    }
+
+    override fun onPause() {
+        super.onPause()
+        saveProgress()
+        exoPlayer?.pause()
+    }
 
     override fun onDestroy() {
         cancelAutoNext()
+        progressJob?.cancel()
         super.onDestroy()
         exoPlayer?.release()
         exoPlayer = null

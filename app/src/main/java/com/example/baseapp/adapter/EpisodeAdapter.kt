@@ -15,6 +15,7 @@ class EpisodeAdapter(private val episodes: com.google.gson.JsonArray) : Recycler
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val tvEpsTitle: TextView = view.findViewById(R.id.tvEpsTitle)
         val tvEpsDate: TextView = view.findViewById(R.id.tvEpsDate)
+        val pbEpisodeProgress: android.widget.ProgressBar = view.findViewById(R.id.pbEpisodeProgress)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -30,6 +31,18 @@ class EpisodeAdapter(private val episodes: com.google.gson.JsonArray) : Recycler
 
         holder.tvEpsTitle.text = title
         holder.tvEpsDate.text = date
+        
+        val prefs = holder.itemView.context.getSharedPreferences("VideoProgress", android.content.Context.MODE_PRIVATE)
+        val savedPos = prefs.getLong(slug, 0L)
+        val duration = prefs.getLong(slug + "_duration", 0L)
+        
+        if (duration > 0 && savedPos > 0) {
+            val percentage = (savedPos.toFloat() / duration.toFloat() * 100).toInt()
+            holder.pbEpisodeProgress.progress = percentage
+            holder.pbEpisodeProgress.visibility = View.VISIBLE
+        } else {
+            holder.pbEpisodeProgress.visibility = View.GONE
+        }
         
         holder.itemView.setOnClickListener {
             val intent = Intent(holder.itemView.context, WatchActivity::class.java)

@@ -53,6 +53,13 @@ class DetailActivity : AppCompatActivity() {
         return true
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (::rvEpisodes.isInitialized && rvEpisodes.adapter != null) {
+            rvEpisodes.adapter?.notifyDataSetChanged()
+        }
+    }
+
     private fun fetchDetail(slug: String) {
         lifecycleScope.launch {
             try {
